@@ -1,0 +1,30 @@
+name: Update US Yield History
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Run script
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: python scripts/fetch_us_history.py
+
+      - name: Commit file
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@github.com"
+          git add us_yield_history.json
+          git commit -m "update us yield history" || echo "no changes"
+          git push
